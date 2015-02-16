@@ -1,0 +1,63 @@
+```{r}
+# Now we can model the data
+#loadrequiredlibrariesforpreprocessing(TRUE)
+setwd('/Users/dsing001/LV/R')
+library(ggplot2)
+library(discretization)
+library(randomForest)
+library(ROCR)
+library(LV)
+library(unbalanced)
+
+clscol='Class'
+
+# read the data which we saved as part of part 2 aka feature selection
+train_data <- read.csv('fs_train_data.csv')
+test_data <- read.csv('fs_test_data.csv')
+valid_data <- read.csv('fs_validdata.csv')
+
+#convert following num cols to the fact as these have very few distinct values. This is part of preprocessing. However
+#there are columns which has more than 100 levels and thus model might not work. Either we do not convert these fields into the factor columns or we run the chi merge process to merge the continous interval as these are ordered.
+
+numcols_to_be_converted <- c(3,8,11,12,13,14,17,18)
+
+train_data[,numcols_to_be_converted ] <- lapply(train_data[,numcols_to_be_converted], function(cl) as.ordered(round(cl)))
+
+test_data[,numcols_to_be_converted ] <- lapply(test_data[,numcols_to_be_converted], function(cl) as.ordered(round(cl)))
+
+valid_data[,numcols_to_be_converted ] <- lapply(valid_data[,numcols_to_be_converted], function(cl) as.ordered(round(cl)))
+
+# merge the levels
+td <- merge_lvls(train_data,test_data,valid_data,alpha=0.05)
+train_data <- td[[1]]
+test_data <- td[[2]]
+valid_data <- td[[3]]
+
+
+frml1 <- 'Class ~ .'
+md_prms <- train_and_predict_log_reg_and_ret_auc(frml1,train_data,valid_data,predict_type='response')
+auc <- md_prms$auc
+mdl <- md_prms$model
+tst_with_prob <- md_prms$tst_with_prob
+#
+AUC <- auc$AUC
+GC <- (2*AUC) - 1
+KS <- auc$KS
+KSRealized <- auc$KSRealized
+AUC
+GC
+KS
+rocperf <- auc$rocperf
+plot(rocperf,col='blue',xlim = c(0,1), ylim = c(0,1)) 
+cutoffvalues <- as.vector(attr(rocperf,'alpha.values')[[1]])
+cutoffvalue <- cutoffvalues[KSRealized]
+cutoffvalue
+#generate the confusion matrix. To get the cutoff I will use the fact that we have KS score. Thus, where we have that value occuring we will have the best accuracy/recall/precision
+tst_with_prob$predclass <- ifelse(tst_with_prob$predprob>cutoffvalue,1,0)
+ab <- table(tst_with_prob$predclass,tst_with_prob$Class)
+ab
+recall <- ab[2,2]/(ab[1,2] + ab[2,2])
+recall
+
+```
+

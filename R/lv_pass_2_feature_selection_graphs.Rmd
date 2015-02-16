@@ -1,0 +1,77 @@
+---
+output: word_document
+---
+```{r}
+options(warn=-1)
+setwd('/Users/dsing001/LV/R')
+
+#load the csv file and provide the name as lv
+
+library(ggplot2)
+library(discretization)
+library(randomForest)
+library(ROCR)
+library(LV)
+
+filename <- 'LendingClub.csv'
+header <- TRUE
+filename
+
+clscol='Class'
+
+# remove all the uncomplete data
+X <- read.csv(file=filename,header=header)
+clscolpos <- match(clscol,colnames(X))
+X <- X[complete.cases(X),]
+X <- moveclasscolintheend(X,clscolpos)
+X[,clscolpos] <- as.character(X[,clscolpos])
+
+# Change the levels to 0 and 1
+X[X[,clscolpos]=='Creditworthy',clscolpos] <- '0'
+X[X[,clscolpos]=='Uncreditworthy',clscolpos] <- '1'
+X[,clscolpos] <- as.factor(as.numeric(X[,clscol]))
+
+
+
+
+#After prelim processing I found that some of the data has vey few values in some of the levels and this could be an issue.
+#Also, based on graphs It looked like that some of the data in these factors is independent i.e. chi square test.
+#Thus running whether a process which will merge all the levels of a column which are independent base on chi square. I.e. these levels does not have discrimintaive power w.r.t. class.
+
+# However, first create 3 subsets to make sure that we run this process only on the train data and doesnt do it on test data otherwise there might be a bias in our model.
+
+# Generate the 3 sets. i.e test set 0.3 Valid set is 0.07  and train is 0.63
+dt_set <- generte_train_test_validset(X,test_ratio=0.3,valid_ratio=0.1)
+train_data <- dt_set$train_data
+test_data <- dt_set$test_data
+valid_data <- dt_set$valid_data
+
+#Run the merge level proces. Not that independence will be tested only on the train data but to be consstent we have to merge the same lable in test data and valid data as well.
+td <- merge_lvls(train_data,test_data,valid_data)
+train_data <- td[[1]]
+test_data <- td[[2]]
+valid_data <- td[[3]]
+
+
+#Now write all the data to the files so  taht we use this data for modelling and other purposes.
+write.csv(train_data,'fs_train_data.csv',row.names=FALSE,quote=TRUE)
+write.csv(test_data,'fs_test_data.csv',row.names=FALSE,quote=TRUE)
+write.csv(valid_data,'fs_validdata.csv',row.names=FALSE,quote=TRUE)
+
+#Generate graph. It might take long time but these graphs might be useful as we have merged some of the level. You can skip these steps if you want.
+plotvariousgraphs(train_data,individualplots=TRUE,crossplot=TRUE,byfactcols=FALSE,plotall=FALSE,clscol=clscol,timetovieweachinput=0)
+
+#
+# Now run the feature selection process. It will do following.
+# 1. It will find the top 20 features using random forest
+# 2. It will run a logistic regression based on a single column at a time.
+# 3. It will run a logistic regression based on interaction of just 2 columns at a time.
+# 4. It wil generate a decision tree based on single column at a time.
+# 5. It will generate a decision tree based on 2 column at a time.
+
+frml1 <- as.formula('Class ~ .')
+findusefulfeatures(train_data,alpha = 0.05,ranking='accuracy',k=20,frml1,ntree=100,cp = 0.001)
+
+options(warn=0)
+```
+

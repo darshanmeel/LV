@@ -1,0 +1,56 @@
+
+```{r}
+# Now we can model the data
+#loadrequiredlibrariesforpreprocessing(TRUE)
+setwd('/Users/dsing001/LV/R')
+library(ggplot2)
+library(discretization)
+library(randomForest)
+library(ROCR)
+library(LV)
+library(unbalanced)
+
+clscol='Class'
+
+# read the data which we saved as part of part 2 aka feature selection
+train_data <- read.csv('fs_train_data.csv')
+test_data <- read.csv('fs_test_data.csv')
+valid_data <- read.csv('fs_validdata.csv')
+
+# Try just the normal model.
+frml1 <- 'Class ~ .'
+md_prms <- train_and_predict_log_reg_and_ret_auc(frml1,train_data,valid_data,predict_type='response')
+auc <- md_prms$auc
+mdl <- md_prms$model
+tst_with_prob <- md_prms$tst_with_prob
+#
+AUC <- auc$AUC
+GC <- (2*AUC) - 1
+KS <- auc$KS
+KSRealized <- auc$KSRealized
+AUC
+GC
+KS
+rocperf <- auc$rocperf
+plot(rocperf,col='blue',xlim = c(0,1), ylim = c(0,1)) 
+cutoffvalues <- as.vector(attr(rocperf,'alpha.values')[[1]])
+cutoffvalue <- cutoffvalues[KSRealized]
+cutoffvalue
+#generate the confusion matrix. To get the cutoff I will use the fact that we have KS score. Thus, where we have that value occuring we will have the best accuracy/recall/precision
+tst_with_prob$predclass <- ifelse(tst_with_prob$predprob>cutoffvalue,1,0)
+ab <- table(tst_with_prob$predclass,tst_with_prob$Class)
+ab
+recall <- ab[2,2]/(ab[1,2] + ab[2,2])
+recall
+
+#> AUC
+#[1] 0.7138692
+#> GC
+#[1] 0.4277385
+#> KS
+#[1] 0.3304646
+
+
+```
+
+
