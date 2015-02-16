@@ -24,7 +24,7 @@ valid_data <- read.csv('fs_validdata.csv')
 
 frml1 <- 'Class ~ . + Loan.Purpose:Loan.Term + Loan.Purpose:Loan.Amount + Loan.Purpose:No..Delinquencies.In.Last.2.Years + Loan.Purpose:Use.Of.Credit.Line'
 
-md_prms <- train_and_predict_log_reg_and_ret_auc(frml1,train_data,test_data,predict_type='response')
+md_prms <- train_and_predict_log_reg_and_ret_auc(frml1,train_data,valid_data,predict_type='response')
 auc <- md_prms$auc
 mdl <- md_prms$model
 tst_with_prob <- md_prms$tst_with_prob
@@ -71,7 +71,7 @@ recall
 frml1 <- 'Class ~ . + No..Of.Credit.Lines:Use.Of.Credit.Line + No..Adverse.Public.Records:Loan.Application.Description
 + No..Of.Credit.Lines:No..Of.Public.Record.Bankruptcies + Loan.Term:Loan.Application.Description + Home.Ownership:Loan.Application.Description + Earliest.Credit.Line.Opened:Use.Of.Credit.Line'
 
-md_prms <- train_and_predict_log_reg_and_ret_auc(frml1,train_data,test_data,predict_type='response')
+md_prms <- train_and_predict_log_reg_and_ret_auc(frml1,train_data,valid_data,predict_type='response')
 auc <- md_prms$auc
 mdl <- md_prms$model
 # This is just the test data along with predicted probabilty value.

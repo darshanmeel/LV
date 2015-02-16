@@ -57,18 +57,19 @@ roc_of_models <- function(test,clscolpos)
     # you can calculate KS based on the tpr , fpr y values as well as you can use the roc curve.On roc curve these valus are 
     # y axis and x axis
     diff_in_vals <- as.vector(attr(rocperf,'y.values')[[1]]-attr(rocperf,'x.values')[[1]])
+    # This will be used to find out what cutoff value to use
     KSRealized <- which.max(diff_in_vals)
     KS <- max(diff_in_vals)
     list(AUC=auc,KS=KS,rocperf=rocperf,KSRealized=KSRealized,acc=acc,recall=recall,percision=percision)
 }
-
+# This is for random forest. It is very simple method.
 train_rf <- function(frml1,train,test,...)
 {
   rf <- randomForest(frml1,train,importance=TRUE,...)
   test$predprob <- predict(rf,test,type='prob')[,2]
   list(test=test)
 }
-#
+# This is to get all the details like rocof models based on random forest.
 train_and_predict_random_forest_and_ret_auc <- function(frml1,train,test,clscolpos=NULL,...)
 {
   if (length(clscolpos) == 0) {

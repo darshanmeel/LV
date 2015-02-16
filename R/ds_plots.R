@@ -14,10 +14,10 @@ IndividualPlots <- function(df,x,col=NULL,isxfactor=FALSE){
   }
   else
   {
-    g <- ggplot(df,aes_string(x=x,fill=x)) +  geom_bar(stat="bin",binwidth=1,position='fill')
+    g <- ggplot(df,aes_string(x=x,fill=col)) +  geom_bar(stat="bin",binwidth=1,position='fill')
     ttl <- paste('Bar plot for column \n',x)
   }
-  g <- g + ggtitle(ttl) +  theme(plot.title = element_text(size=8,lineheight=.8,vjust=2))
+  g <- g + ggtitle(ttl) +  theme(plot.title = element_text(size=10,lineheight=.8,vjust=2))
   g
 
 }
@@ -57,7 +57,7 @@ mult_plots_ggplot_scatter <-  function(df, x, y, z,isxfactor=FALSE,isyfactor=FAL
 
       }
     }
-    g <- g + ggtitle(ttl) +  theme(plot.title = element_text(size=8,lineheight=.8,vjust=2))
+    g <- g + ggtitle(ttl) +  theme(plot.title = element_text(size=10,lineheight=.8,vjust=2))
     g
   }
 

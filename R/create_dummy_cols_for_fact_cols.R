@@ -1,4 +1,4 @@
-#Now make all the factor columns their own columns
+#This will make all the factor columns to dummy varibale binary columns based on each level.
 create_dummy_cols_for_fact_cols <- function(X,clscolpos)
 {
 fcl <- findallfactorcols(X)
