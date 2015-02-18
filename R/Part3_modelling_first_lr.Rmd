@@ -16,9 +16,20 @@ clscol='Class'
 train_data <- read.csv('fs_train_data.csv')
 test_data <- read.csv('fs_test_data.csv')
 valid_data <- read.csv('fs_validdata.csv')
+train_data$dbt <- train_data$Annual.Income * train_data$Debt.To.Income.Ratio
+test_data$dbt <- test_data$Annual.Income * test_data$Debt.To.Income.Ratio
+valid_data$dbt <- valid_data$Annual.Income * valid_data$Debt.To.Income.Ratio
+
+test_data$Class1 <- as.factor(test_data$Class)
+train_data$Class1 <- as.factor(train_data$Class)
+valid_data$Class1 <- as.factor(valid_data$Class)
+
+test_data$Class <- NULL
+train_data$Class <- NULL
+valid_data$Class <- NULL
 
 # Try just the normal model.
-frml1 <- 'Class ~ .'
+frml1 <- 'Class1 ~ .'
 md_prms <- train_and_predict_log_reg_and_ret_auc(frml1,train_data,valid_data,predict_type='response')
 auc <- md_prms$auc
 mdl <- md_prms$model
@@ -32,6 +43,7 @@ AUC
 GC
 KS
 rocperf <- auc$rocperf
+
 plot(rocperf,col='blue',xlim = c(0,1), ylim = c(0,1)) 
 cutoffvalues <- as.vector(attr(rocperf,'alpha.values')[[1]])
 cutoffvalue <- cutoffvalues[KSRealized]
