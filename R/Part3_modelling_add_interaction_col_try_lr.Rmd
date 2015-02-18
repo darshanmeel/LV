@@ -19,6 +19,11 @@ train_data <- read.csv('fs_train_data.csv')
 test_data <- read.csv('fs_test_data.csv')
 valid_data <- read.csv('fs_validdata.csv')
 
+
+train_data$No..Of.Credit.Lines <- NULL
+test_data$No..Of.Credit.Lines <- NULL
+valid_data$No..Of.Credit.Lines <- NULL
+
 #Now add the interaction terms
 # from decision tree
 
@@ -68,8 +73,8 @@ recall
 ## 106       Earliest.Credit.Line.Opened                Use.Of.Credit.Line
 
 
-frml1 <- 'Class ~ . + No..Of.Credit.Lines:Use.Of.Credit.Line + No..Adverse.Public.Records:Loan.Application.Description
-+ No..Of.Credit.Lines:No..Of.Public.Record.Bankruptcies + Loan.Term:Loan.Application.Description + Home.Ownership:Loan.Application.Description + Earliest.Credit.Line.Opened:Use.Of.Credit.Line'
+frml1 <- 'Class ~ . + Total.Number.Of.Credit.Lines:Use.Of.Credit.Line + No..Adverse.Public.Records:Loan.Application.Description
++ Total.Number.Of.Credit.Lines:No..Of.Public.Record.Bankruptcies + Loan.Term:Loan.Application.Description + Home.Ownership:Loan.Application.Description + Earliest.Credit.Line.Opened:Use.Of.Credit.Line'
 
 md_prms <- train_and_predict_log_reg_and_ret_auc(frml1,train_data,valid_data,predict_type='response')
 auc <- md_prms$auc

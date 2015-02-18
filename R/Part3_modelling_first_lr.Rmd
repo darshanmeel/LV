@@ -17,6 +17,10 @@ train_data <- read.csv('fs_train_data.csv')
 test_data <- read.csv('fs_test_data.csv')
 valid_data <- read.csv('fs_validdata.csv')
 
+train_data$No..Of.Credit.Lines <- NULL
+test_data$No..Of.Credit.Lines <- NULL
+valid_data$No..Of.Credit.Lines <- NULL
+# remove the column no of credit lines
 # Try just the normal model.
 frml1 <- 'Class ~ .'
 md_prms <- train_and_predict_log_reg_and_ret_auc(frml1,train_data,valid_data,predict_type='response')

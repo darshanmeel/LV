@@ -27,6 +27,10 @@ test_data[,numcols_to_be_converted ] <- lapply(test_data[,numcols_to_be_converte
 
 valid_data[,numcols_to_be_converted ] <- lapply(valid_data[,numcols_to_be_converted], function(cl) as.ordered(round(cl)))
 
+train_data$No..Of.Credit.Lines <- NULL
+test_data$No..Of.Credit.Lines <- NULL
+valid_data$No..Of.Credit.Lines <- NULL
+
 # merge the levels
 td <- merge_lvls(train_data,test_data,valid_data,alpha=0.05)
 train_data <- td[[1]]
