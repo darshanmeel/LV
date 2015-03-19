@@ -5,12 +5,24 @@ output: word_document
 #load the csv file and provide the name as lv
 
 setwd('/Users/dsing001/LV/R')
+
+#install.packages('ggplot2')
+#install.packages('discretization')
+#install.packages('randomForest')
+#install.packages('ROCR')
+#install.packages('LV')
+#install.packages('unbalanced')
+#install.packages('rpart')
+#install.packages('StatMatch')
+
 library(ggplot2)
 library(discretization)
 library(randomForest)
 library(ROCR)
 library(LV)
 library(unbalanced)
+library(rpart)
+library(StatMatch)
 # Select any file name and class column
 filename <- 'LendingClub.csv'
 header <- TRUE

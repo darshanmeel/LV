@@ -6,7 +6,7 @@
 #As this is a supervised method I am assuming thta you have class/response column.
 # Here k means how many parameters to bring
 # ranking means what ranking to use for random forest. You can pass random forest parameters as well.
-findusefulfeatures <- function(X,alpha=0.05,ranking='accuracy',k=20,frml1,cp=0.01,ntree=100)
+findusefulfeatures <- function(X,alpha=0.05,ranking='accuracy',k=20,frml1,cp=0.01,ntree=100,Y)
 {
   
   k <- ifelse(ncol(X) < k,ncol(X),k)
@@ -25,15 +25,16 @@ findusefulfeatures <- function(X,alpha=0.05,ranking='accuracy',k=20,frml1,cp=0.0
   #print(rf$imp_ordered)
   print ("now rankinsg based on logistic regression. This is custom log reg")
 
-  lr <- lr_feature_selection(X)
+  lr <- lr_feature_selection(X,Y)
   singlecols <- lr$singlecols
   print ("importance of single columns")
   #singlecols <- singlecols[order(singlecols[,2]),]
   print(singlecols)
   interactioncols <- lr$interactioncols
-  interactioncols <- interactioncols[order(interactioncols[,5]),]
+  interactioncols <- interactioncols[order(interactioncols[,3]),]
   print(interactioncols)
   
   # Run decision tree and it might take a bit longer and might generate long output in case all of the columns are discriminative
+  print ("generating decision trees")
   decision_tree_for_finding_features(X,cp=cp)
 }

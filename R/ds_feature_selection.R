@@ -24,7 +24,7 @@
 # when we will have large data and large number of columns but for smaller data set and lesser columns it is quite posisble.Especially, if you
 #run on a cluster where you actauuly ruyn different set of formula on different machine
 
-lr_feature_selection <- function(X,ignoresamecolprefix = FALSE)
+lr_feature_selection <- function(X,Y,ignoresamecolprefix = FALSE)
 {
   #ignoresamecolprefix
   #above parameter will be used to fix the issue when we create multiple column from a single column.
@@ -39,10 +39,82 @@ lr_feature_selection <- function(X,ignoresamecolprefix = FALSE)
   #define two dataframes oen for single column
 
   singlecols <- as.data.frame(t(c(as.character('NULL'),as.numeric(0.0))))
+  colnames(singlecols) <- c('col1','col1_aucvalue')
+  singlecols$col1 <- as.character(singlecols$col1)
+  singlecols$col1_aucvalue <- as.numeric(as.character(singlecols$col1_aucvalue))
+
+  #another for column and itreaction with other column
+  interactioncols <- as.data.frame(t(c(as.character('NULL'),as.character('NULL'),as.numeric(0.0))))
+  colnames(interactioncols) <- c('col1','col2','interaction_aucvalue')
+  #provide proper data types
+  interactioncols$col1 <- as.character(interactioncols$col1)
+  interactioncols$col2 <- as.character(interactioncols$col2)
+  interactioncols$interaction_aucvalue <- as.numeric(as.character(interactioncols$interaction_aucvalue))
+
+  for (i in 1:colrange)
+  {
+    #generate the model for a single column only.See the p values
+    frml <- paste(mainfrml,cols[i])
+    trdt <- X[,c(i,ncol)]
+    vldt <- Y[,c(i,ncol)]
+    
+    md_prms <- train_and_predict_log_reg_and_ret_auc(frml,trdt,vldt,predict_type='response')
+    auc <- md_prms$auc
+    AUC <- auc$AUC
+
+    aucvalvector <- c(cols[i])
+    aucvalvector <- append(aucvalvector,as.vector(AUC))
+    print (aucvalvector)
+    print ('here')
+    singlecols <-rbind(singlecols,aucvalvector)
+    #loop through one more time as well but not the same column but different columns
+    jstart <- i+1
+    if (jstart > colrange){
+      break
+    }
+    for (j in jstart:colrange){
+      aucvalvector <- c(cols[i],cols[j])
+      #now run for the two columns and their interaction model and savetheir p values
+      frml <- paste(mainfrml,cols[i],'+',cols[j],'+',paste0(cols[i],':',cols[j]))
+      trdt <- X[,c(i,j,ncol)]
+      vldt <- Y[,c(i,j,ncol)]
+      
+      md_prms <- train_and_predict_log_reg_and_ret_auc(frml,trdt,vldt,predict_type='response')
+      auc <- md_prms$auc
+      AUC <- auc$AUC
+
+      
+      aucvalvector <- append(aucvalvector,as.vector(AUC))
+      interactioncols <-rbind(interactioncols,aucvalvector)
+
+    }
+  }
+  interactioncols<- subset(interactioncols,interaction_aucvalue !='NaN' & interaction_aucvalue != 'NA')
+  interactioncols$interaction_aucvalue <- as.numeric(as.character(interactioncols$interaction_aucvalue))
+  singlecols<- subset(singlecols,col1_aucvalue !='NaN' & col1_aucvalue != 'NA')
+  singlecols$col1_aucvalue <- as.numeric(as.character(singlecols$col1_aucvalue))
+  list(interactioncols=interactioncols[-1,],singlecols=singlecols[-1,])
+}
+
+lr_feature_selection_p <- function(X,ignoresamecolprefix = FALSE)
+{
+  #ignoresamecolprefix
+  #above parameter will be used to fix the issue when we create multiple column from a single column.
+  #here there wont be any interaction at all and thusthere is no point of runing that.This will reduce the tiem etaken as well.
+  
+  #loop through all columns
+  cols <- colnames(X)
+  ncol <- length(cols)
+  mainfrml <- paste(cols[ncol],'~')
+  #now loop through all columns
+  colrange <- ncol-1
+  #define two dataframes oen for single column
+  
+  singlecols <- as.data.frame(t(c(as.character('NULL'),as.numeric(0.0))))
   colnames(singlecols) <- c('col1','col1_pvalue')
   singlecols$col1 <- as.character(singlecols$col1)
   singlecols$col1_pvalue <- as.numeric(singlecols$col1_pvalue)
-
+  
   #another for column and itreaction with other column
   interactioncols <- as.data.frame(t(c(as.character('NULL'),as.character('NULL'),as.numeric(0.0),as.numeric(0.0),as.numeric(0.0))))
   colnames(interactioncols) <- c('col1','col2','col1_pvalue','col2_pvalue','interaction_pvalue')
@@ -52,12 +124,12 @@ lr_feature_selection <- function(X,ignoresamecolprefix = FALSE)
   interactioncols$col1_pvalue <- as.numeric(interactioncols$col1_pvalue)
   interactioncols$col2_pvalue <- as.numeric(interactioncols$col2_pvalue)
   interactioncols$interaction_pvalue <- as.numeric(interactioncols$interaction_pvalue)
-
+  
   for (i in 1:colrange)
   {
     #generate the model for a single column only.See the p values
     frml <- paste(mainfrml,cols[i])
-
+    
     lm1 <- glm(as.formula(frml),data=X[,c(i,ncol)],family=binomial)
     ab <- summary(lm1)$coefficients
     pvalvector <- c(cols[i])

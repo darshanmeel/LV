@@ -28,7 +28,7 @@ calccostoutnum <- function(X,Y,bt,ncolw,nroww)
  
  
   
-}
+
 
 minsftmx <- function (train_data,train_class,test_data,test_class)
 {
