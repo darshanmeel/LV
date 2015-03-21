@@ -31,7 +31,7 @@ X[X[,clscolpos]=='Creditworthy',clscolpos] <- '0'
 X[X[,clscolpos]=='Uncreditworthy',clscolpos] <- '1'
 X[,clscolpos] <- as.factor(as.numeric(X[,clscol]))
 
-
+readfromiles=TRUE
 
 
 #After prelim processing I found that some of the data has vey few values in some of the levels and this could be an issue.
@@ -41,10 +41,18 @@ X[,clscolpos] <- as.factor(as.numeric(X[,clscol]))
 # However, first create 3 subsets to make sure that we run this process only on the train data and doesnt do it on test data otherwise there might be a bias in our model.
 
 # Generate the 3 sets. i.e test set 0.3 Valid set is 0.07  and train is 0.63
+
+
+
 dt_set <- generte_train_test_validset(X,test_ratio=0.3,valid_ratio=0.1)
 train_data <- dt_set$train_data
 test_data <- dt_set$test_data
 valid_data <- dt_set$valid_data
+
+
+
+
+#plotvariousgraphs(train_data,individualplots=TRUE,crossplot=TRUE,byfactcols=FALSE,plotall=FALSE,clscol=clscol,timetovieweachinput=0)
 
 #Run the merge level proces. Not that independence will be tested only on the train data but to be consstent we have to merge the same lable in test data and valid data as well.
 td <- merge_lvls(train_data,test_data,valid_data)
@@ -70,7 +78,7 @@ plotvariousgraphs(train_data,individualplots=TRUE,crossplot=TRUE,byfactcols=FALS
 # 5. It will generate a decision tree based on 2 column at a time.
 
 
-frml1 <- as.formula('Class ~ .')
+frml1 <- as.formula(paste0(clscol,' ~ .'))
 findusefulfeatures(train_data,alpha = 0.05,ranking='accuracy',k=20,frml1,ntree=100,cp = 0.001,valid_data)
 
 options(warn=0)

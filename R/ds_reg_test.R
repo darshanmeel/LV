@@ -28,7 +28,7 @@ train_and_predict_log_reg <- function(frml1,train,test,predict_type='response',.
 train_log_reg <- function(frml1,train,...)
 {
   frml1 <- as.formula(frml1)
-  lm1 <- glm(frml1,data=train,family=binomial)
+  lm1 <- glm(frml1,data=train,family=binomial,control=list(epsilon = 0.000001, maxit = 100, trace = FALSE))
   list(model =lm1)
 }
 #This method will return the prediction for log reg

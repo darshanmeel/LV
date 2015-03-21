@@ -75,7 +75,7 @@ lr_feature_selection <- function(X,Y,ignoresamecolprefix = FALSE)
     for (j in jstart:colrange){
       aucvalvector <- c(cols[i],cols[j])
       #now run for the two columns and their interaction model and savetheir p values
-      frml <- paste(mainfrml,cols[i],'+',cols[j],'+',paste0(cols[i],':',cols[j]))
+      frml <- paste(mainfrml,paste0(cols[i],':',cols[j]))
       trdt <- X[,c(i,j,ncol)]
       vldt <- Y[,c(i,j,ncol)]
       
