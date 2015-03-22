@@ -44,6 +44,7 @@ for (i in seq(numfolds))
   print (paste('fold',i))
   print 
  td <- train_data[flds[[i]],]
+ td <- rbind(td,td_u)
  print(head(td))
 
 

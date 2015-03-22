@@ -1,7 +1,6 @@
 ---
 output: word_document
 ---
-
 ```{r}
 # Now we can model the data
 #loadrequiredlibrariesforpreprocessing(TRUE)
@@ -21,13 +20,19 @@ train_data <- read.csv('fs_train_data.csv')
 test_data <- read.csv('fs_test_data.csv')
 valid_data <- read.csv('fs_validdata.csv')
 
+
+train_data$No..Of.Credit.Lines <- NULL
+test_data$No..Of.Credit.Lines <- NULL
+valid_data$No..Of.Credit.Lines <- NULL
+
 train_data[,clscol] <- as.factor(as.numeric(train_data[,clscol] ))
 test_data[,clscol] <- as.factor(as.numeric(test_data[,clscol] ))
 valid_data[,clscol] <- as.factor(as.numeric(valid_data[,clscol] ))
 
-head(train_data)
-frml1 <- as.formula('Class ~ .')
+#Now add the interaction terms
+# from decision tree
 
+frml1 <- 'Class ~ . + Loan.Purpose:FICO.Credit.Score + Loan.Purpose:Use.Of.Credit.Line + Loan.Term:FICO.Credit.Score + Loan.Term:Annual.Income + Loan.Term:Use.Of.Credit.Line +  Annual.Income:FICO.Credit.Score +  Loan.Term:Loan.Purpose + FICO.Credit.Score:No..Inquiries.In.Last.6.Months + No..Inquiries.In.Last.6.Months:Use.Of.Credit.Line +   FICO.Credit.Score:Total.Number.Of.Credit.Lines + Loan.Term:No..Inquiries.In.Last.6.Months'
 
 md_prms <- train_and_predict_log_reg_and_ret_auc(frml1,train_data,valid_data,predict_type='response')
 auc <- md_prms$auc
@@ -42,6 +47,7 @@ AUC
 GC
 KS
 rocperf <- auc$rocperf
+
 plot(rocperf,col='blue',xlim = c(0,1), ylim = c(0,1)) 
 
 #Plot the roc curve
@@ -102,6 +108,7 @@ AUC
 GC
 KS
 rocperf <- auc$rocperf
+
 plot(rocperf,col='blue',xlim = c(0,1), ylim = c(0,1)) 
 
 #Plot the roc curve
@@ -147,7 +154,5 @@ recall
 acc <- (ab[2,2] + ab[1,1])/(sum(ab))
 acc
 
-
 ```
-
 

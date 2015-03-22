@@ -28,7 +28,11 @@ valid_data[,clscol] <- as.factor(as.numeric(valid_data[,clscol] ))
 head(train_data)
 frml1 <- as.formula('Class ~ .')
 
-
+#oversample the rare class and undersample the class with creditworthy the data and then use that for modelling.
+train_smt <- ubSMOTE(train_data[,-ncol(train_data)], train_data$Class, perc.over = 200, k = 5, perc.under = 175, verbose = TRUE)
+table(train_smt$Y)
+train_data <- train_smt$X
+train_data$Class <- train_smt$Y
 md_prms <- train_and_predict_log_reg_and_ret_auc(frml1,train_data,valid_data,predict_type='response')
 auc <- md_prms$auc
 mdl <- md_prms$model

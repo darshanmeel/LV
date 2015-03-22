@@ -32,11 +32,72 @@ valid_data[,clscol] <- as.factor(as.numeric(valid_data[,clscol] ))
 #Now add the interaction terms
 # from decision tree
 
-frml1 <- 'Class ~ Loan.Term + FICO.Credit.Score + Use.Of.Credit.Line + Annual.Income  + Total.Credit.Balance + Total.Number.Of.Credit.Lines + Loan.Purpose + Earliest.Credit.Line.Opened + Loan.Amount + Debt.To.Income.Ratio'
+frml1 <- as.formula('Class ~ .')
 
-md_prms <- train_and_predict_log_reg_and_ret_auc(frml1,train_data,valid_data,predict_type='response')
+md_prms <- train_and_predict_random_forest_and_ret_auc(frml1,train_data,valid_data)
 auc <- md_prms$auc
-mdl <- md_prms$model
+tst_with_prob <- md_prms$tst_with_prob
+#
+AUC <- auc$AUC
+GC <- (2*AUC) - 1
+KS <- auc$KS
+KSRealized <- auc$KSRealized
+AUC
+GC
+KS
+rocperf <- auc$rocperf
+
+plot(rocperf,col='blue',xlim = c(0,1), ylim = c(0,1)) 
+
+#Plot the roc curve
+# 1- specificity
+fpr <- as.vector(attr(rocperf,'x.values')[[1]])
+tpr <- as.vector(attr(rocperf,'y.values')[[1]])
+pr <- data.frame(cbind(fpr,tpr))
+colnames(pr) <- c('fpr','tpr')
+
+
+
+cutoffvalues <- as.vector(attr(rocperf,'alpha.values')[[1]])
+cutoffvalue <- cutoffvalues[KSRealized]
+#cutoffvalue <- 0.5
+cutoffvalue
+#generate the confusion matrix. To get the cutoff I will use the fact that we have KS score. Thus, where we have that value occuring we will have the best accuracy/recall/precision
+tst_with_prob$predclass <- ifelse(tst_with_prob$predprob>cutoffvalue,1,0)
+#missclassification each one example say where class 1 was predicted as class 0 and vice versa
+tst_with_prob[1422,]
+tst_with_prob_1 <- tst_with_prob[tst_with_prob$Class==1 & tst_with_prob$predclass==0,]
+dim(tst_with_prob_1)
+tst_with_prob_0 <- tst_with_prob[tst_with_prob$Class==0 & tst_with_prob$predclass==1,]
+dim(tst_with_prob_0)
+tst_with_prob_1 <- tst_with_prob_1[1,]
+tst_with_prob_0 <- tst_with_prob_0[1,]
+tst_with_prob_1
+tst_with_prob_0
+#find all the data which is similar and show that
+k=5
+simitms_1 <- order(gower.dist(tst_with_prob_1,tst_with_prob))[seq(1:k)]
+#show 5 nearst point to the misclassified example
+tst_with_prob[simitms_1,]
+
+simitms_0 <- order(gower.dist(tst_with_prob_0,tst_with_prob))[seq(1:k)]
+#show 5 nearst point to the misclassified example
+tst_with_prob[simitms_0,]
+
+#calculate accurayce and recall
+ab <- table(tst_with_prob$predclass,tst_with_prob$Class)
+ab
+recall <- ab[2,2]/(ab[1,2] + ab[2,2])
+recall
+acc <- (ab[2,2] + ab[1,1])/(sum(ab))
+acc
+
+#part below this should be run only when you are fine with your model on validation data and you should not cheat by running below an calibrating your model :)
+#on test data accuracy
+train_data <- rbind(train_data,valid_data)
+md_prms <- train_and_predict_random_forest_and_ret_auc(frml1,train_data,test_data)
+auc <- md_prms$auc
+
 tst_with_prob <- md_prms$tst_with_prob
 #
 AUC <- auc$AUC
